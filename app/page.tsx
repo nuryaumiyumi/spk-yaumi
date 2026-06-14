@@ -1,118 +1,137 @@
 "use client";
 
 import Link from "next/link";
+import { dataKriteria } from "@/lib/saw";
+import { useApp } from "@/components/AppProvider";
+import {
+  RocketIcon,
+  ArrowRightIcon,
+  InfoIcon,
+  SparkIcon,
+  LeafIcon,
+  PlantIcon,
+  ScaleIcon,
+  TargetIcon,
+} from "@/components/icons";
 
 export default function Home() {
+  const { alternatif } = useApp();
+
+  const stats = [
+    {
+      value: String(dataKriteria.length),
+      title: "Kriteria Penilaian",
+      sub: "Evaluasi komprehensif",
+      Icon: LeafIcon,
+      glow: "glow-green",
+      iconBg: "bg-[rgba(46,232,95,0.12)]",
+      iconColor: "text-[#4ade80]",
+    },
+    {
+      value: String(alternatif.length),
+      title: "Alternatif Bibit",
+      sub: "Varietas unggulan",
+      Icon: PlantIcon,
+      glow: "glow-blue",
+      iconBg: "bg-[rgba(56,160,255,0.12)]",
+      iconColor: "text-[#5ab2ff]",
+    },
+    {
+      value: "SAW",
+      title: "Metode",
+      sub: "Perhitungan akurat",
+      Icon: ScaleIcon,
+      glow: "glow-amber",
+      iconBg: "bg-[rgba(245,180,40,0.12)]",
+      iconColor: "text-[#f5b428]",
+    },
+    {
+      value: "98.7%",
+      title: "Akurasi Keputusan",
+      sub: "Tingkat kepercayaan tinggi",
+      Icon: TargetIcon,
+      glow: "glow-purple",
+      iconBg: "bg-[rgba(168,90,255,0.12)]",
+      iconColor: "text-[#b98cff]",
+    },
+  ];
+
   return (
-    <div className="min-h-screen">
-      <div className="relative overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-white">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float" style={{ animationDelay: '1s' }}></div>
-        
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
-          <div className="text-center lg:text-left lg:flex lg:items-center lg:justify-between gap-16">
-            <div className="lg:w-2/3 animate-fadeInUp">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 text-white text-sm font-medium mb-6 shadow-lg animate-glow">
-                <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
-                SISTEM PENGAMBILAN KEPUTUSAN
-              </div>
-              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
-                <span className="text-gray-900">Pilih Bibit Cabai</span>
-                <span className="gradient-text block mt-2">Premium Terbaik</span>
-              </h1>
-              <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                Sistem ini membantu Anda memilih bibit cabai premium terbaik 
-                menggunakan metode <strong className="text-emerald-600">Multi Criteria Decision Making (MCDM)</strong> 
-                untuk hasil yang lebih objektif dan akurat.
-              </p>
-              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                <Link
-                  href="/perhitungan"
-                  className="group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
-                >
-                  Mulai Penilaian
-                  <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-                <Link
-                  href="/kriteria"
-                  className="px-8 py-3.5 bg-white text-emerald-600 font-semibold rounded-xl border-2 border-emerald-600 hover:bg-emerald-50 transition-all hover:shadow-md"
-                >
-                  Pelajari Lebih Lanjut
-                </Link>
-              </div>
-              <div className="mt-12 flex flex-wrap gap-8 justify-center lg:justify-start">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <span className="text-emerald-600 text-lg">✓</span>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">15+</p>
-                    <p className="text-sm text-gray-500">Alternatif Bibit</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <span className="text-emerald-600 text-lg">📊</span>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">4</p>
-                    <p className="text-sm text-gray-500">Kriteria Penilaian</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <span className="text-emerald-600 text-lg">🏆</span>
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold text-gray-900">98.7%</p>
-                    <p className="text-sm text-gray-500">Akurasi Sistem</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="mt-12 lg:mt-0 lg:w-1/3 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
-              <div className="bg-white rounded-2xl shadow-xl p-8">
-                <div className="text-center">
-                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-float">
-                    <span className="text-4xl">📐</span>
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-900">Metode SAW</h3>
-                  <p className="text-gray-500 mt-1">Simple Additive Weighting</p>
-                  <div className="mt-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
-                  <div className="mt-4">
-                    <div className="text-5xl font-bold gradient-text">98.7%</div>
-                    <p className="text-sm text-gray-500 mt-2">Tingkat Akurasi</p>
-                    <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full animate-pulse-slow" style={{ width: '98.7%' }}></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+    <div className="space-y-8 border rounded-lg h-full border-emerald-200/20 p-4 ">
+      {/* HERO */}
+      <section className=" relative overflow-hidden">
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/cabai-content.jpeg')" }}
+        />
+        <div className="absolute inset-0 bg-linear-to-r from-[var(--bg)] via-[var(--bg)]/82 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-[var(--bg)]/80 via-transparent to-transparent" />
+
+        <div className="relative z-10 flex min-h-[340px] max-w-xl flex-col justify-center p-8 sm:p-12 lg:min-h-[400px] lg:p-16 animate-fadeInUp">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--neon)]">
+            Sistem Pengambilan Keputusan
+          </p>
+
+          <h1 className="mt-5 text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-5xl">
+            Pilih Bibit Cabai
+            <span className="mt-2 flex items-center gap-3">
+              <span className="text-gradient-green">Premium Terbaik</span>
+              <SparkIcon
+                width={32}
+                height={32}
+                className="text-[#facc15] drop-shadow-[0_0_12px_rgba(250,204,21,0.7)]"
+              />
+            </span>
+          </h1>
+
+          <p className="mt-6 max-w-lg text-sm leading-relaxed text-[var(--text-muted)] sm:text-base">
+            Sistem ini membantu Anda memilih bibit cabai premium terbaik
+            menggunakan metode{" "}
+            <strong className="font-semibold text-[var(--neon)]">
+              Multi Criteria Decision Making (MCDM)
+            </strong>{" "}
+            untuk hasil yang lebih objektif dan akurat.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3.5 sm:flex-row">
+            <Link
+              href="/perhitungan"
+              className="btn-neon inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm"
+            >
+              <RocketIcon width={18} height={18} /> Mulai Penilaian
+              <ArrowRightIcon width={16} height={16} />
+            </Link>
+            <Link
+              href="/informasi"
+              className="btn-ghost inline-flex items-center justify-center gap-2 px-7 py-3.5 text-sm font-semibold"
+            >
+              <InfoIcon width={18} height={18} /> Pelajari Lebih Lanjut
+            </Link>
           </div>
         </div>
-      </div>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-4">Keunggulan Sistem Kami</h2>
-          <p className="text-gray-600 max-w-2xl mx-auto">Dengan metode SAW yang teruji, Anda mendapatkan rekomendasi terbaik</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {[
-            { icon: "🎯", title: "4 Kriteria Penilaian", desc: "Penilaian komprehensif dengan bobot yang terukur" },
-            { icon: "🌶️", title: "15 Alternatif Bibit", desc: "Berbagai varietas unggulan dari petani berpengalaman" },
-            { icon: "📊", title: "Metode SAW", desc: "Perhitungan akurat & objektif dengan MCDM" }
-          ].map((item, i) => (
-            <div key={i} className="group bg-white rounded-2xl p-8 shadow-lg card-hover border border-gray-100">
-              <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
-                <span className="text-3xl">{item.icon}</span>
+      </section>
+
+      {/* STAT CARDS */}
+      <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
+        {stats.map(
+          ({ value, title, sub, Icon, glow, iconBg, iconColor }, i) => (
+            <div
+              key={title}
+              className={`glass card-hover animate-fadeInUp p-6 ${glow}`}
+              style={{ animationDelay: `${i * 0.08}s` }}
+            >
+              <div
+                className={`grid h-12 w-12 place-items-center rounded-xl ${iconBg} ${iconColor}`}
+              >
+                <Icon width={23} height={23} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+              <p className="mt-5 text-3xl font-extrabold text-white">{value}</p>
+              <p className="mt-1.5 text-sm font-semibold text-white">{title}</p>
+              <p className="mt-0.5 text-xs text-[var(--text-dim)]">{sub}</p>
             </div>
-          ))}
-        </div>
-      </div>
+          ),
+        )}
+      </section>
     </div>
   );
 }

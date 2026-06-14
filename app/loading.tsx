@@ -1,7 +1,7 @@
 export default function Loading() {
   return (
-    <div className="flex items-center justify-center min-h-[60vh]">
-      <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="h-16 w-16 animate-spin rounded-full border-4 border-[rgba(46,232,95,0.2)] border-t-[var(--neon)]" />
     </div>
   );
 }

@@ -1,89 +1,273 @@
 "use client";
 
-import { dataAlternatif, dataKriteria } from '@/lib/saw';
-import { useState } from 'react';
+import { useMemo, useState } from "react";
+import { useApp } from "@/components/AppProvider";
+import { dataKriteria } from "@/lib/saw";
+import { formatAngka } from "@/lib/format";
+import PageHeader from "@/components/PageHeader";
+import Modal from "@/components/Modal";
+import {
+  AlternatifIcon, SearchIcon, PlusIcon, EditIcon, TrashIcon, CheckIcon,
+} from "@/components/icons";
+import type { Alternatif } from "@/types";
+
+const warnaKolom: Record<string, string> = {
+  hasil: "text-[#4ade80]",
+  ketahanan: "text-[#5ab2ff]",
+  harga: "text-[#f5b428]",
+  umur: "text-[#b98cff]",
+};
+
+type FormState = { nama: string; nilai: Record<string, string> };
+
+const formKosong = (): FormState => ({
+  nama: "",
+  nilai: Object.fromEntries(dataKriteria.map((k) => [k.id, ""])),
+});
 
 export default function AlternatifPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const filteredAlternatif = dataAlternatif.filter(alt =>
-    alt.nama.toLowerCase().includes(searchTerm.toLowerCase())
+  const { alternatif, tambahAlternatif, ubahAlternatif, hapusAlternatif } = useApp();
+
+  const [cari, setCari] = useState("");
+  const [formOpen, setFormOpen] = useState(false);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [form, setForm] = useState<FormState>(formKosong);
+  const [error, setError] = useState<string | null>(null);
+  const [hapusTarget, setHapusTarget] = useState<Alternatif | null>(null);
+
+  const terfilter = useMemo(
+    () => alternatif.filter((a) => a.nama.toLowerCase().includes(cari.toLowerCase())),
+    [alternatif, cari]
   );
 
-  return (
-    <div>
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
-            <span className="text-white text-xl">🌶️</span>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Alternatif Bibit Cabai</h1>
-        </div>
-        <p className="text-gray-600">15 varietas bibit cabai premium yang akan dinilai</p>
-        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4"></div>
-      </div>
+  const bukaTambah = () => {
+    setEditId(null);
+    setForm(formKosong());
+    setError(null);
+    setFormOpen(true);
+  };
 
-      {/* Search Bar */}
-      <div className="mb-6">
-        <div className="relative max-w-md">
+  const bukaEdit = (a: Alternatif) => {
+    setEditId(a.id);
+    setForm({
+      nama: a.nama,
+      nilai: Object.fromEntries(dataKriteria.map((k) => [k.id, String(a.nilai[k.id] ?? "")])),
+    });
+    setError(null);
+    setFormOpen(true);
+  };
+
+  const simpan = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nama = form.nama.trim();
+    if (!nama) {
+      setError("Nama bibit wajib diisi.");
+      return;
+    }
+
+    const nilai: Record<string, number> = {};
+    for (const k of dataKriteria) {
+      const raw = form.nilai[k.id];
+      const num = Number(raw);
+      if (raw === "" || Number.isNaN(num)) {
+        setError(`Nilai "${k.singkat}" harus berupa angka.`);
+        return;
+      }
+      if (num <= 0) {
+        setError(`Nilai "${k.singkat}" harus lebih dari 0.`);
+        return;
+      }
+      nilai[k.id] = num;
+    }
+
+    if (editId) ubahAlternatif(editId, { nama, nilai });
+    else tambahAlternatif({ nama, nilai });
+    setFormOpen(false);
+  };
+
+  const konfirmHapus = () => {
+    if (hapusTarget) hapusAlternatif(hapusTarget.id);
+    setHapusTarget(null);
+  };
+
+  return (
+    <div className="space-y-8">
+      <PageHeader
+        title="Alternatif Bibit Cabai"
+        subtitle={`${alternatif.length} varietas bibit cabai premium — kelola data secara manual`}
+        Icon={AlternatifIcon}
+      />
+
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-md">
+          <SearchIcon width={18} height={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-dim)]" />
           <input
             type="text"
             placeholder="Cari bibit cabai..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            value={cari}
+            onChange={(e) => setCari(e.target.value)}
+            className="input-field w-full py-2.5 pl-11 pr-4 text-sm"
           />
-          <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
         </div>
+        <button
+          onClick={bukaTambah}
+          className="btn-neon inline-flex shrink-0 items-center justify-center gap-2 px-5 py-2.5 text-sm"
+        >
+          <PlusIcon width={18} height={18} /> Tambah Alternatif
+        </button>
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="glass overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gradient-to-r from-emerald-600 to-green-600">
-              <tr>
-                <th className="px-4 py-4 text-left text-xs font-medium text-white uppercase">No</th>
-                <th className="px-4 py-4 text-left text-xs font-medium text-white uppercase">Nama Bibit</th>
-                {dataKriteria.map(k => (
-                  <th key={k.id} className="px-4 py-4 text-center text-xs font-medium text-white uppercase">
-                    {k.nama.split(' ')[0]}
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="head-bar text-xs uppercase tracking-wider text-[var(--text-dim)]">
+                <th className="px-6 py-4 text-left font-semibold">No</th>
+                <th className="px-6 py-4 text-left font-semibold">Nama Bibit</th>
+                {dataKriteria.map((k) => (
+                  <th key={k.id} className="px-6 py-4 text-right font-semibold">
+                    <span className={`block normal-case ${warnaKolom[k.id] ?? "text-[var(--text-muted)]"}`}>
+                      {k.singkat}
+                    </span>
+                    <span className="block text-[10px] font-medium normal-case tracking-normal text-[var(--text-dim)]">
+                      {k.satuan}
+                    </span>
                   </th>
                 ))}
+                <th className="px-6 py-4 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredAlternatif.map((alternatif, index) => (
-                <tr key={alternatif.id} className="hover:bg-gray-50 transition">
-                  <td className="px-4 py-4 text-sm text-gray-500">{index + 1}</td>
-                  <td className="px-4 py-4 text-sm font-semibold text-gray-800">{alternatif.nama}</td>
-                  {dataKriteria.map(k => (
-                    <td key={k.id} className="px-4 py-4 text-center text-sm">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full ${
-                        k.id === 'hasil' ? 'bg-green-100 text-green-700' :
-                        k.id === 'ketahanan' ? 'bg-blue-100 text-blue-700' :
-                        k.id === 'harga' ? 'bg-orange-100 text-orange-700' :
-                        'bg-purple-100 text-purple-700'
-                      }`}>
-                        {alternatif.nilai[k.id]}
-                        {k.id === 'hasil' && ' kg'}
-                        {k.id === 'harga' && ' Rp'}
-                        {k.id === 'umur' && ' hari'}
-                      </span>
+            <tbody>
+              {terfilter.map((a, index) => (
+                <tr key={a.id} className="table-row-hover border-t border-[var(--border)]">
+                  <td className="px-6 py-4 tabular-nums text-[var(--text-dim)]">{index + 1}</td>
+                  <td className="px-6 py-4 font-semibold text-white">{a.nama}</td>
+                  {dataKriteria.map((k) => (
+                    <td key={k.id} className="px-6 py-4 text-right tabular-nums text-[var(--text-muted)]">
+                      {formatAngka(a.nilai[k.id])}
                     </td>
                   ))}
+                  <td className="px-6 py-4">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => bukaEdit(a)}
+                        className="grid h-9 w-9 place-items-center rounded-lg text-[var(--text-muted)] ring-1 ring-[var(--border)] transition hover:text-[var(--neon)] hover:ring-[rgba(46,232,95,0.4)]"
+                        aria-label={`Ubah ${a.nama}`}
+                      >
+                        <EditIcon width={16} height={16} />
+                      </button>
+                      <button
+                        onClick={() => setHapusTarget(a)}
+                        className="grid h-9 w-9 place-items-center rounded-lg text-[var(--text-muted)] ring-1 ring-[var(--border)] transition hover:text-[#fb7185] hover:ring-[rgba(244,63,94,0.4)]"
+                        aria-label={`Hapus ${a.nama}`}
+                      >
+                        <TrashIcon width={16} height={16} />
+                      </button>
+                    </div>
+                  </td>
                 </tr>
               ))}
+              {terfilter.length === 0 && (
+                <tr className="border-t border-[var(--border)]">
+                  <td colSpan={3 + dataKriteria.length} className="px-6 py-14 text-center text-[var(--text-dim)]">
+                    {alternatif.length === 0
+                      ? "Belum ada data alternatif. Tambahkan data baru."
+                      : "Tidak ada bibit yang cocok dengan pencarian."}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
-      
-      <div className="mt-4 text-sm text-gray-500">
-        Menampilkan {filteredAlternatif.length} dari {dataAlternatif.length} alternatif
-      </div>
+
+      <p className="text-sm text-[var(--text-dim)]">
+        Menampilkan {terfilter.length} dari {alternatif.length} alternatif
+      </p>
+
+      {/* Form tambah / ubah */}
+      <Modal
+        open={formOpen}
+        onClose={() => setFormOpen(false)}
+        title={editId ? "Ubah Alternatif" : "Tambah Alternatif"}
+      >
+        <form onSubmit={simpan} className="space-y-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">Nama Bibit</label>
+            <input
+              autoFocus
+              type="text"
+              value={form.nama}
+              onChange={(e) => setForm((f) => ({ ...f, nama: e.target.value }))}
+              placeholder="cth. Cabai Merah Juara F1"
+              className="input-field w-full px-4 py-2.5 text-sm"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {dataKriteria.map((k) => (
+              <div key={k.id}>
+                <label className="mb-1.5 block text-sm font-medium text-[var(--text-muted)]">
+                  {k.singkat} <span className="text-[var(--text-dim)]">({k.satuan})</span>
+                </label>
+                <input
+                  type="number"
+                  inputMode="numeric"
+                  value={form.nilai[k.id]}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, nilai: { ...f.nilai, [k.id]: e.target.value } }))
+                  }
+                  placeholder="0"
+                  className="input-field w-full px-4 py-2.5 text-sm tabular-nums"
+                />
+              </div>
+            ))}
+          </div>
+
+          {error && (
+            <p className="rounded-lg bg-[rgba(244,63,94,0.1)] px-3.5 py-2.5 text-sm text-[#fb7185] ring-1 ring-[rgba(244,63,94,0.3)]">
+              {error}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-3 pt-1">
+            <button
+              type="button"
+              onClick={() => setFormOpen(false)}
+              className="btn-ghost px-5 py-2.5 text-sm font-semibold text-white"
+            >
+              Batal
+            </button>
+            <button type="submit" className="btn-neon inline-flex items-center gap-2 px-5 py-2.5 text-sm">
+              <CheckIcon width={16} height={16} /> {editId ? "Simpan Perubahan" : "Tambah Data"}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Konfirmasi hapus */}
+      <Modal open={!!hapusTarget} onClose={() => setHapusTarget(null)} title="Hapus Alternatif">
+        <p className="text-sm leading-relaxed text-[var(--text-muted)]">
+          Yakin ingin menghapus{" "}
+          <strong className="text-white">{hapusTarget?.nama}</strong>? Tindakan ini tidak dapat dibatalkan.
+        </p>
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            onClick={() => setHapusTarget(null)}
+            className="btn-ghost px-5 py-2.5 text-sm font-semibold text-white"
+          >
+            Batal
+          </button>
+          <button
+            onClick={konfirmHapus}
+            className="inline-flex items-center gap-2 rounded-[var(--radius-xl)] bg-gradient-to-br from-[#f43f5e] to-[#e11d48] px-5 py-2.5 text-sm font-bold text-white shadow-[0_10px_30px_-8px_rgba(244,63,94,0.5)] transition hover:brightness-110"
+          >
+            <TrashIcon width={16} height={16} /> Hapus
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 }

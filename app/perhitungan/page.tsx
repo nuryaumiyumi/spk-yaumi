@@ -1,65 +1,73 @@
 "use client";
 
-import { hitungSAW, dataKriteria, dataAlternatif } from '@/lib/saw';
-import { useState } from 'react';
+import { hitungSAW, dataKriteria } from "@/lib/saw";
+import { useApp } from "@/components/AppProvider";
+import { useState } from "react";
+import PageHeader from "@/components/PageHeader";
+import { PerhitunganIcon, HasilIcon, ChevronDownIcon } from "@/components/icons";
 
 export default function PerhitunganPage() {
+  const { alternatif } = useApp();
   const [showDetail, setShowDetail] = useState(false);
-  const hasil = hitungSAW(dataKriteria, dataAlternatif);
+  const hasil = hitungSAW(dataKriteria, alternatif);
+
+  const rankBadge = (r: number) =>
+    r === 1 ? "bg-gradient-to-br from-[#facc15] to-[#eab308] text-[#3b2f00]"
+    : r === 2 ? "bg-gradient-to-br from-[#cbd5e1] to-[#94a3b8] text-[#1e293b]"
+    : r === 3 ? "bg-gradient-to-br from-[#fb923c] to-[#ea580c] text-[#3b1700]"
+    : "bg-gradient-to-br from-[#34e36a] to-[#16a34a] text-[#042b13]";
 
   return (
-    <div>
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
-            <span className="text-white text-xl">📐</span>
+    <div className="space-y-8">
+      <PageHeader
+        title="Perhitungan SAW"
+        subtitle="Proses perhitungan menggunakan metode Simple Additive Weighting"
+        Icon={PerhitunganIcon}
+      />
+
+      <button
+        onClick={() => setShowDetail(!showDetail)}
+        className="btn-ghost inline-flex w-fit items-center gap-2 px-5 py-3 text-sm font-semibold text-white"
+      >
+        <ChevronDownIcon
+          width={18}
+          height={18}
+          className={`transition-transform ${showDetail ? "rotate-180" : ""}`}
+        />
+        {showDetail ? "Sembunyikan Detail" : "Tampilkan Detail Perhitungan"}
+      </button>
+
+      {showDetail && (
+        <div className="glass animate-fadeIn overflow-hidden">
+          <div className="head-bar flex items-center gap-2 px-6 py-5 sm:px-8">
+            <span className="h-2 w-2 rounded-full bg-[var(--neon)]" />
+            <h2 className="font-semibold text-white">Matriks Normalisasi</h2>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Perhitungan SAW</h1>
-        </div>
-        <p className="text-gray-600">Proses perhitungan menggunakan metode Simple Additive Weighting</p>
-        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4"></div>
-      </div>
-
-      <div className="grid gap-6">
-        <button
-          onClick={() => setShowDetail(!showDetail)}
-          className="w-fit px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
-        >
-          {showDetail ? '🔽 Sembunyikan Detail' : '▶️ Tampilkan Detail Perhitungan'}
-        </button>
-
-        {showDetail && (
-          <div className="bg-white rounded-2xl shadow-xl p-6 overflow-x-auto">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
-              Matriks Normalisasi
-            </h2>
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Alternatif</th>
-                  {dataKriteria.map(k => (
-                    <th key={k.id} className="px-4 py-3 text-center text-xs font-medium text-gray-500">{k.nama.split(' ')[0]}</th>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead>
+                <tr className="border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-dim)]">
+                  <th className="px-6 py-4 text-left font-semibold">Alternatif</th>
+                  {dataKriteria.map((k) => (
+                    <th key={k.id} className="px-6 py-4 text-center font-semibold">{k.singkat}</th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
-                {dataAlternatif.map(a => {
-                  const normalizedValues = dataKriteria.map(k => {
-                    const allValues = dataAlternatif.map(alt => alt.nilai[k.id]);
+              <tbody>
+                {alternatif.map((a) => {
+                  const normalizedValues = dataKriteria.map((k) => {
+                    const allValues = alternatif.map((alt) => alt.nilai[k.id]);
                     const maxVal = Math.max(...allValues);
                     const minVal = Math.min(...allValues);
-                    if (k.jenis === 'benefit') {
-                      return (a.nilai[k.id] / maxVal).toFixed(3);
-                    } else {
-                      return (minVal / a.nilai[k.id]).toFixed(3);
-                    }
+                    return k.jenis === "benefit"
+                      ? (a.nilai[k.id] / maxVal).toFixed(3)
+                      : (minVal / a.nilai[k.id]).toFixed(3);
                   });
                   return (
-                    <tr key={a.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-800">{a.nama}</td>
+                    <tr key={a.id} className="table-row-hover border-t border-[var(--border)]">
+                      <td className="px-6 py-3.5 font-medium text-white">{a.nama}</td>
                       {normalizedValues.map((val, idx) => (
-                        <td key={idx} className="px-4 py-3 text-center text-sm text-gray-600 font-mono">{val}</td>
+                        <td key={idx} className="px-6 py-3.5 text-center font-mono text-[var(--text-muted)]">{val}</td>
                       ))}
                     </tr>
                   );
@@ -67,55 +75,55 @@ export default function PerhitunganPage() {
               </tbody>
             </table>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Hasil perangkingan */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-5">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-              🏆 Hasil Perangkingan
-            </h2>
-            <p className="text-emerald-100 text-sm mt-1">Berdasarkan perhitungan metode SAW dari 15 alternatif</p>
+      {/* Ranking */}
+      <div className="glass overflow-hidden">
+        <div className="head-bar flex items-center gap-3 px-6 py-5 sm:px-8">
+          <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#34e36a] to-[#16a34a] text-[#042b13]">
+            <HasilIcon width={20} height={20} />
+          </span>
+          <div>
+            <h2 className="text-lg font-bold text-white">Hasil Perangkingan</h2>
+            <p className="text-sm text-[var(--text-muted)]">
+              Berdasarkan perhitungan metode SAW dari {alternatif.length} alternatif
+            </p>
           </div>
-          <div className="divide-y divide-gray-200">
-            {hasil.map((item) => (
-              <div key={item.alternatif.id} className="p-5 hover:bg-gray-50 transition-all duration-300">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                  <div className="flex items-center gap-4">
-                    <div className={`
-                      w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md
-                      ${item.rangking === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' : 
-                        item.rangking === 2 ? 'bg-gradient-to-r from-gray-400 to-gray-500' : 
-                        item.rangking === 3 ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 
-                        'bg-gradient-to-r from-emerald-500 to-green-600'}
-                    `}>
-                      {item.rangking}
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{item.alternatif.nama}</h3>
-                      <p className="text-sm text-gray-500">Skor: {item.totalSkor.toFixed(4)}</p>
-                    </div>
+        </div>
+
+        <div>
+          {hasil.map((item) => (
+            <div key={item.alternatif.id} className="table-row-hover border-t border-[var(--border)] px-6 py-5 sm:px-8">
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex min-w-0 flex-1 items-center gap-4">
+                  <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-full text-lg font-extrabold shadow-lg ${rankBadge(item.rangking)}`}>
+                    {item.rangking}
                   </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-2xl font-bold gradient-text">{(item.totalSkor * 100).toFixed(2)}%</p>
-                      <div className="w-40 bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full"
-                          style={{ width: `${item.totalSkor * 100}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                    {item.rangking === 1 && (
-                      <span className="px-4 py-2 bg-yellow-100 text-yellow-700 text-sm font-bold rounded-full shadow-md">
-                        🏆 REKOMENDASI TERBAIK
-                      </span>
-                    )}
+                  <div className="min-w-0">
+                    <h3 className="truncate text-base font-semibold text-white">{item.alternatif.nama}</h3>
+                    <p className="text-sm text-[var(--text-dim)]">Skor: {item.totalSkor.toFixed(4)}</p>
                   </div>
                 </div>
+                <div className="flex shrink-0 items-center gap-5">
+                  <div className="text-right">
+                    <p className="text-2xl font-extrabold text-gradient-green">{(item.totalSkor * 100).toFixed(2)}%</p>
+                    <div className="mt-1 h-2 w-40 overflow-hidden rounded-full bg-white/10">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-[#34e36a] to-[#16a34a]"
+                        style={{ width: `${item.totalSkor * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                  {item.rangking === 1 && (
+                    <span className="rounded-full bg-[rgba(250,204,21,0.14)] px-4 py-2 text-sm font-bold text-[#facc15] ring-1 ring-[rgba(250,204,21,0.35)]">
+                      🏆 REKOMENDASI TERBAIK
+                    </span>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

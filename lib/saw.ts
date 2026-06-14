@@ -1,4 +1,4 @@
-import { Kriteria, Alternatif, HasilPerhitungan } from '@/types';
+import { Kriteria, Alternatif, HasilPerhitungan, DetailSAW } from '@/types';
 
 export function hitungSAW(
   kriteria: Kriteria[],
@@ -47,12 +47,52 @@ export function hitungSAW(
   return hasil;
 }
 
+// Versi rinci dari SAW: mengembalikan nilai min/max tiap kriteria serta
+// langkah normalisasi & pembobotan tiap alternatif (dipakai halaman Detail).
+export function detailSAW(
+  kriteria: Kriteria[],
+  alternatif: Alternatif[]
+): DetailSAW {
+  const ekstrem: Record<string, { min: number; max: number }> = {};
+  for (const k of kriteria) {
+    const nilai = alternatif.map((a) => a.nilai[k.id]);
+    ekstrem[k.id] = { min: Math.min(...nilai), max: Math.max(...nilai) };
+  }
+
+  const hasil = alternatif.map((a) => {
+    const rincian = kriteria.map((k) => {
+      const nilai = a.nilai[k.id];
+      const { min, max } = ekstrem[k.id];
+      const pembagi = k.jenis === 'benefit' ? max : min;
+      const normalisasi = k.jenis === 'benefit' ? nilai / max : min / nilai;
+      return {
+        kriteria: k,
+        nilai,
+        pembagi,
+        normalisasi,
+        kontribusi: normalisasi * k.bobot,
+      };
+    });
+    const total = rincian.reduce((s, r) => s + r.kontribusi, 0);
+    return { alternatif: a, rincian, total, rangking: 0 };
+  });
+
+  // Beri peringkat (1 = skor tertinggi) tanpa mengubah urutan asli.
+  [...hasil]
+    .sort((a, b) => b.total - a.total)
+    .forEach((item, i) => {
+      item.rangking = i + 1;
+    });
+
+  return { ekstrem, hasil };
+}
+
 // 4 KRITERIA
 export const dataKriteria: Kriteria[] = [
-  { id: 'hasil', nama: 'Hasil Panen (kg/ha)', bobot: 0.35, jenis: 'benefit' },
-  { id: 'ketahanan', nama: 'Ketahanan Hama/Penyakit', bobot: 0.30, jenis: 'benefit' },
-  { id: 'harga', nama: 'Harga Bibit (per 1000 biji)', bobot: 0.20, jenis: 'cost' },
-  { id: 'umur', nama: 'Umur Panen (hari)', bobot: 0.15, jenis: 'cost' }
+  { id: 'hasil', nama: 'Hasil Panen (kg/ha)', singkat: 'Hasil', satuan: 'kg/ha', bobot: 0.35, jenis: 'benefit' },
+  { id: 'ketahanan', nama: 'Ketahanan Hama & Penyakit', singkat: 'Ketahanan', satuan: 'skala 1–10', bobot: 0.30, jenis: 'benefit' },
+  { id: 'harga', nama: 'Harga Bibit (per 1000 biji)', singkat: 'Harga', satuan: 'Rp', bobot: 0.20, jenis: 'cost' },
+  { id: 'umur', nama: 'Umur Panen (hari)', singkat: 'Umur', satuan: 'hari', bobot: 0.15, jenis: 'cost' }
 ];
 
 // 15 ALTERNATIF BIBIT CABAI
