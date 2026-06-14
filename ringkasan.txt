@@ -1,0 +1,1442 @@
+=== ./.gitignore ===
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+.env*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+=== ./app/alternatif/page.tsx ===
+"use client";
+
+import { dataAlternatif, dataKriteria } from '@/lib/saw';
+import { useState } from 'react';
+
+export default function AlternatifPage() {
+  const [searchTerm, setSearchTerm] = useState('');
+  
+  const filteredAlternatif = dataAlternatif.filter(alt =>
+    alt.nama.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  return (
+    <div>
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl">🌶️</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Alternatif Bibit Cabai</h1>
+        </div>
+        <p className="text-gray-600">15 varietas bibit cabai premium yang akan dinilai</p>
+        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4"></div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <input
+            type="text"
+            placeholder="Cari bibit cabai..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 pl-10 pr-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+          <svg className="absolute left-3 top-2.5 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-emerald-600 to-green-600">
+              <tr>
+                <th className="px-4 py-4 text-left text-xs font-medium text-white uppercase">No</th>
+                <th className="px-4 py-4 text-left text-xs font-medium text-white uppercase">Nama Bibit</th>
+                {dataKriteria.map(k => (
+                  <th key={k.id} className="px-4 py-4 text-center text-xs font-medium text-white uppercase">
+                    {k.nama.split(' ')[0]}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {filteredAlternatif.map((alternatif, index) => (
+                <tr key={alternatif.id} className="hover:bg-gray-50 transition">
+                  <td className="px-4 py-4 text-sm text-gray-500">{index + 1}</td>
+                  <td className="px-4 py-4 text-sm font-semibold text-gray-800">{alternatif.nama}</td>
+                  {dataKriteria.map(k => (
+                    <td key={k.id} className="px-4 py-4 text-center text-sm">
+                      <span className={`inline-flex items-center px-2 py-1 rounded-full ${
+                        k.id === 'hasil' ? 'bg-green-100 text-green-700' :
+                        k.id === 'ketahanan' ? 'bg-blue-100 text-blue-700' :
+                        k.id === 'harga' ? 'bg-orange-100 text-orange-700' :
+                        'bg-purple-100 text-purple-700'
+                      }`}>
+                        {alternatif.nilai[k.id]}
+                        {k.id === 'hasil' && ' kg'}
+                        {k.id === 'harga' && ' Rp'}
+                        {k.id === 'umur' && ' hari'}
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <div className="mt-4 text-sm text-gray-500">
+        Menampilkan {filteredAlternatif.length} dari {dataAlternatif.length} alternatif
+      </div>
+    </div>
+  );
+}
+=== ./app/globals.css ===
+@import "tailwindcss";
+
+/* ========================================
+   RESET CSS & VARIABLES
+   ======================================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --primary: #16a34a;
+  --primary-dark: #15803d;
+  --primary-light: #22c55e;
+  --sidebar-green: #2AEE20;
+  --sidebar-green-dark: #1a8a15;
+  --sidebar-green-darker: #0d5a0a;
+  --sidebar-bg-start: #1a5d14;
+  --sidebar-bg-end: #0d3d0a;
+  --white: #ffffff;
+  --black: #000000;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+  --info: #3b82f6;
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+  --spacing-24: 6rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+body {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+  color: white;
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; border: none; background: none; }
+
+/* Sidebar scroll */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sidebar-green) var(--sidebar-bg-start);
+}
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: var(--sidebar-bg-start);
+  border-radius: var(--radius-full);
+}
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: var(--sidebar-green);
+  border-radius: var(--radius-full);
+}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background: #3eff34;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(42, 238, 32, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(42, 238, 32, 0); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+@keyframes glow-green {
+  0%, 100% { box-shadow: 0 0 5px rgba(42, 238, 32, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(42, 238, 32, 0.6); }
+}
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes slideInRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-fadeInUp { animation: fadeInUp 0.6s ease-out forwards; }
+.animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
+.animate-pulse { animation: pulse 2s ease-in-out infinite; }
+.animate-pulse-green { animation: pulse-green 1.5s ease-in-out infinite; }
+.animate-float { animation: float 3s ease-in-out infinite; }
+.animate-glow-green { animation: glow-green 2s ease-in-out infinite; }
+.animate-slideInLeft { animation: slideInLeft 0.3s ease-out forwards; }
+.animate-slideInRight { animation: slideInRight 0.3s ease-out forwards; }
+.animate-spin { animation: spin 1s linear infinite; }
+.animate-glow { animation: glow-green 2s ease-in-out infinite; }
+.animate-pulse-slow { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+
+/* Utility Classes */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--spacing-4);
+  padding-right: var(--spacing-4);
+}
+@media (min-width: 640px) {
+  .container {
+    padding-left: var(--spacing-6);
+    padding-right: var(--spacing-6);
+  }
+}
+@media (min-width: 1024px) {
+  .container {
+    padding-left: var(--spacing-8);
+    padding-right: var(--spacing-8);
+  }
+}
+
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+.flex-col { flex-direction: column; }
+.flex-row { flex-direction: row; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-1 { gap: var(--spacing-1); }
+.gap-2 { gap: var(--spacing-2); }
+.gap-3 { gap: var(--spacing-3); }
+.gap-4 { gap: var(--spacing-4); }
+.gap-6 { gap: var(--spacing-6); }
+
+.p-1 { padding: var(--spacing-1); }
+.p-2 { padding: var(--spacing-2); }
+.p-3 { padding: var(--spacing-3); }
+.p-4 { padding: var(--spacing-4); }
+.p-5 { padding: var(--spacing-5); }
+.p-6 { padding: var(--spacing-6); }
+.p-8 { padding: var(--spacing-8); }
+.px-4 { padding-left: var(--spacing-4); padding-right: var(--spacing-4); }
+.px-6 { padding-left: var(--spacing-6); padding-right: var(--spacing-6); }
+.py-2 { padding-top: var(--spacing-2); padding-bottom: var(--spacing-2); }
+.py-3 { padding-top: var(--spacing-3); padding-bottom: var(--spacing-3); }
+.py-4 { padding-top: var(--spacing-4); padding-bottom: var(--spacing-4); }
+.py-5 { padding-top: var(--spacing-5); padding-bottom: var(--spacing-5); }
+.py-6 { padding-top: var(--spacing-6); padding-bottom: var(--spacing-6); }
+
+.m-4 { margin: var(--spacing-4); }
+.mx-auto { margin-left: auto; margin-right: auto; }
+.mt-1 { margin-top: var(--spacing-1); }
+.mt-2 { margin-top: var(--spacing-2); }
+.mt-4 { margin-top: var(--spacing-4); }
+.mt-6 { margin-top: var(--spacing-6); }
+.mt-8 { margin-top: var(--spacing-8); }
+.mb-2 { margin-bottom: var(--spacing-2); }
+.mb-4 { margin-bottom: var(--spacing-4); }
+.mb-6 { margin-bottom: var(--spacing-6); }
+.mb-8 { margin-bottom: var(--spacing-8); }
+.ml-2 { margin-left: var(--spacing-2); }
+.ml-3 { margin-left: var(--spacing-3); }
+.ml-4 { margin-left: var(--spacing-4); }
+.ml-14 { margin-left: 3.5rem; }
+.mr-2 { margin-right: var(--spacing-2); }
+
+.text-left { text-align: left; }
+.text-center { text-align: center; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-base { font-size: 1rem; line-height: 1.5rem; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.text-2xl { font-size: 1.5rem; line-height: 2rem; }
+.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+.font-medium { font-weight: 500; }
+.font-semibold { font-weight: 600; }
+.font-bold { font-weight: 700; }
+
+.text-white { color: var(--white); }
+.text-gray-500 { color: var(--gray-500); }
+.text-gray-600 { color: var(--gray-600); }
+.text-gray-700 { color: var(--gray-700); }
+.text-gray-900 { color: var(--gray-900); }
+.text-emerald-600 { color: var(--primary); }
+.text-emerald-800 { color: #065f46; }
+
+.bg-white { background: var(--white); }
+.bg-gray-50 { background: var(--gray-50); }
+.bg-gray-200 { background: var(--gray-200); }
+.bg-emerald-500 { background: var(--primary); }
+.bg-emerald-600 { background: var(--primary-dark); }
+.bg-gradient-to-r { background-image: linear-gradient(to right, var(--tw-gradient-stops)); }
+.from-emerald-600 { --tw-gradient-from: var(--primary-dark); --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.to-green-600 { --tw-gradient-to: var(--primary-dark); }
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark), #065f46);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.rounded-xl { border-radius: var(--radius-xl); }
+.rounded-2xl { border-radius: var(--radius-2xl); }
+.shadow-xl { box-shadow: var(--shadow-xl); }
+.shadow-lg { box-shadow: var(--shadow-lg); }
+
+.table-row-hover {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+.table-row-hover:hover {
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.1) 100%);
+  transform: scale(1.01);
+}
+
+/* Card hover effect – PERBAIKAN */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-hover:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-xl);
+}
+
+@media (min-width: 1024px) {
+  .lg\:ml-72 { margin-left: 18rem; }
+  .lg\:block { display: block; }
+  .lg\:hidden { display: none; }
+  .lg\:translate-x-0 { transform: translateX(0); }
+}
+=== ./app/hasil/page.tsx ===
+"use client";
+
+import { hitungSAW, dataKriteria, dataAlternatif } from '@/lib/saw';
+
+export default function HasilPage() {
+  const hasil = hitungSAW(dataKriteria, dataAlternatif);
+  const terbaik = hasil[0];
+  const top3 = hasil.slice(0, 3);
+
+  const truncateName = (nama: string, maxLen = 12) => {
+    return nama.length > maxLen ? nama.substring(0, maxLen) + '...' : nama;
+  };
+
+  return (
+    <div>
+      <div className="mb-8">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl">🏆</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Hasil Keputusan</h1>
+        </div>
+        <p className="text-gray-600">Rekomendasi final pemilihan bibit cabai premium terbaik dari 15 alternatif</p>
+        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4"></div>
+      </div>
+
+      {/* Podium responsif dengan grid - urutan 2,1,3 */}
+      <div className="mb-12">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end max-w-2xl mx-auto">
+          {/* Rank 2 */}
+          {top3[1] && (
+            <div className="text-center order-2 sm:order-1">
+              <div className="bg-gradient-to-t from-gray-200 to-gray-100 rounded-t-2xl p-4 h-32 flex flex-col items-center justify-end">
+                <span className="text-4xl mb-2">🥈</span>
+                <p className="font-semibold text-gray-800 text-sm">{truncateName(top3[1].alternatif.nama)}</p>
+                <p className="text-xs text-gray-600">{(top3[1].totalSkor * 100).toFixed(1)}%</p>
+              </div>
+              <div className="bg-gray-400 py-2 rounded-b-lg">
+                <p className="text-white font-bold">#2</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Rank 1 */}
+          {terbaik && (
+            <div className="text-center order-1 sm:order-2">
+              <div className="bg-gradient-to-t from-yellow-300 to-yellow-200 rounded-t-2xl p-6 h-44 flex flex-col items-center justify-end shadow-xl">
+                <span className="text-6xl mb-2">👑</span>
+                <p className="font-bold text-gray-800 text-base">{truncateName(terbaik.alternatif.nama, 14)}</p>
+                <p className="text-sm font-bold text-yellow-800">{(terbaik.totalSkor * 100).toFixed(2)}%</p>
+              </div>
+              <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 py-3 rounded-b-lg">
+                <p className="text-white font-bold text-xl">#1 TERBAIK</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Rank 3 */}
+          {top3[2] && (
+            <div className="text-center order-3">
+              <div className="bg-gradient-to-t from-orange-200 to-orange-100 rounded-t-2xl p-4 h-28 flex flex-col items-center justify-end">
+                <span className="text-4xl mb-2">🥉</span>
+                <p className="font-semibold text-gray-800 text-sm">{truncateName(top3[2].alternatif.nama)}</p>
+                <p className="text-xs text-gray-600">{(top3[2].totalSkor * 100).toFixed(1)}%</p>
+              </div>
+              <div className="bg-orange-500 py-2 rounded-b-lg">
+                <p className="text-white font-bold">#3</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* All Rankings - perbaiki warna teks */}
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <h3 className="font-semibold text-gray-900">📋 Perangkingan Lengkap (15 Alternatif)</h3>
+        </div>
+        <div className="divide-y divide-gray-200">
+          {hasil.map((item) => (
+            <div key={item.alternatif.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-all">
+              <div className="flex items-center gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${
+                  item.rangking === 1 ? 'bg-yellow-400 text-white' :
+                  item.rangking === 2 ? 'bg-gray-400 text-white' :
+                  item.rangking === 3 ? 'bg-orange-500 text-white' :
+                  'bg-gray-200 text-gray-700'
+                }`}>
+                  {item.rangking}
+                </div>
+                <span className="font-medium text-gray-800">{item.alternatif.nama}</span>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="w-32 bg-gray-200 rounded-full h-2">
+                  <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full" style={{ width: `${item.totalSkor * 100}%` }}></div>
+                </div>
+                <span className="text-emerald-600 font-bold w-16 text-right">{(item.totalSkor * 100).toFixed(2)}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+=== ./app/kriteria/page.tsx ===
+"use client";
+
+import { dataKriteria } from '@/lib/saw';
+
+export default function KriteriaPage() {
+  const totalBobot = dataKriteria.reduce((sum, k) => sum + k.bobot, 0);
+  
+  return (
+    <div className="p-6 sm:p-8 max-w-7xl mx-auto">
+      <div className="mb-8 ml-4 md:ml-0">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl">📊</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Kriteria Penilaian</h1>
+        </div>
+        <p className="text-gray-600 ml-4 md:ml-14">4 kriteria utama dengan bobot yang telah ditentukan</p>
+        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4 ml-4 md:ml-14"></div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gradient-to-r from-emerald-600 to-green-600">
+              <tr>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">No</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Kriteria</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Bobot</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-white uppercase tracking-wider">Jenis</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-200">
+              {dataKriteria.map((kriteria, index) => (
+                <tr key={kriteria.id} className="table-row-hover">
+                  <td className="px-6 py-4 text-sm text-gray-500 font-medium">{index + 1}</td>
+                  <td className="px-6 py-4 text-sm font-semibold text-gray-900">{kriteria.nama}</td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-bold text-emerald-600 w-12">{kriteria.bobot * 100}%</span>
+                      <div className="flex-1 max-w-xs bg-gray-200 rounded-full h-2.5">
+                        <div 
+                          className="bg-gradient-to-r from-emerald-500 to-green-500 h-2.5 rounded-full"
+                          style={{ width: `${kriteria.bobot * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold rounded-full ${
+                      kriteria.jenis === 'benefit' 
+                        ? 'bg-green-100 text-green-700' 
+                        : 'bg-red-100 text-red-700'
+                    }`}>
+                      {kriteria.jenis === 'benefit' ? '📈 Benefit' : '📉 Cost'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot className="bg-gray-50">
+              <tr>
+                <td colSpan={2} className="px-6 py-4 text-sm font-semibold text-gray-900">Total Bobot</td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-bold text-emerald-600 w-12">{totalBobot * 100}%</span>
+                    <div className="flex-1 max-w-xs bg-gray-200 rounded-full h-2.5">
+                      <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2.5 rounded-full" style={{ width: '100%' }}></div>
+                    </div>
+                  </div>
+                </td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div className="mt-6 p-5 bg-gradient-to-r from-emerald-50 to-green-50 rounded-xl border-l-4 border-emerald-500">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">💡</span>
+          <div>
+            <p className="font-semibold text-emerald-900 mb-1">Informasi Penting</p>
+            <p className="text-sm text-emerald-800">
+              <strong>Benefit (📈)</strong> = semakin besar nilai, semakin baik. 
+              <strong className="ml-2">Cost (📉)</strong> = semakin kecil nilai, semakin baik.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== ./app/laporan/page.tsx ===
+"use client";
+
+import { hitungSAW, dataKriteria, dataAlternatif } from '@/lib/saw';
+
+export default function LaporanPage() {
+  const hasil = hitungSAW(dataKriteria, dataAlternatif);
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleExport = () => {
+    let content = "LAPORAN SPK CABAI PREMIUM\n";
+    content += "================================\n\n";
+    content += "Tanggal: " + new Date().toLocaleDateString('id-ID') + "\n\n";
+    content += "HASIL PERANGKINGAN:\n";
+    hasil.forEach(item => {
+      content += `${item.rangking}. ${item.alternatif.nama} - ${(item.totalSkor * 100).toFixed(2)}%\n`;
+    });
+    content += `\nRekomendasi Terbaik: ${hasil[0].alternatif.nama}\n`;
+    
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `laporan_spk_cabai_${new Date().toISOString().split('T')[0]}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="p-6 sm:p-8 max-w-7xl mx-auto">
+      <div className="mb-8 ml-4 md:ml-0">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl">📄</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Laporan Hasil Keputusan</h1>
+        </div>
+        <p className="text-gray-600 ml-4 md:ml-14">Laporan lengkap hasil pemilihan bibit cabai premium</p>
+        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4 ml-4 md:ml-14"></div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex gap-4 mb-6 ml-4 md:ml-14 print:hidden">
+        <button
+          onClick={handlePrint}
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          🖨️ Cetak Laporan
+        </button>
+        <button
+          onClick={handleExport}
+          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center gap-2"
+        >
+          📥 Export TXT
+        </button>
+      </div>
+
+      {/* Laporan Content */}
+      <div className="bg-white rounded-2xl shadow-xl p-8 print:shadow-none">
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">SPK CABAI PREMIUM</h2>
+          <p className="text-gray-600 mt-1">Sistem Pendukung Keputusan Pemilihan Bibit Cabai Premium</p>
+          <p className="text-sm text-gray-500 mt-2">Tanggal: {new Date().toLocaleDateString('id-ID')}</p>
+          <div className="border-t-2 border-gray-200 mt-4"></div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">A. Kriteria Penilaian</h3>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="text-left p-2">No</th>
+                <th className="text-left p-2">Kriteria</th>
+                <th className="text-left p-2">Bobot</th>
+                <th className="text-left p-2">Jenis</th>
+              </tr>
+            </thead>
+            <tbody>
+              {dataKriteria.map((k, i) => (
+                <tr key={k.id} className="border-b">
+                  <td className="p-2">{i + 1}</td>
+                  <td className="p-2">{k.nama}</td>
+                  <td className="p-2">{k.bobot * 100}%</td>
+                  <td className="p-2">{k.jenis === 'benefit' ? 'Benefit ↑' : 'Cost ↓'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold text-gray-900 mb-3">B. Hasil Perangkingan</h3>
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="text-left p-2">Rangking</th>
+                <th className="text-left p-2">Nama Bibit</th>
+                <th className="text-left p-2">Skor Akhir</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hasil.map((item) => (
+                <tr key={item.alternatif.id} className="border-b">
+                  <td className="p-2 font-semibold">{item.rangking}</td>
+                  <td className="p-2">{item.alternatif.nama}</td>
+                  <td className="p-2 text-emerald-600 font-semibold">{(item.totalSkor * 100).toFixed(2)}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="mt-8 p-4 bg-emerald-50 rounded-lg">
+          <h4 className="font-semibold text-emerald-900 mb-2">📋 Kesimpulan</h4>
+          <p className="text-emerald-800">
+            Berdasarkan perhitungan menggunakan metode <strong>Simple Additive Weighting (SAW)</strong>,
+            bibit cabai premium terbaik yang direkomendasikan adalah <strong className="text-emerald-900">{hasil[0]?.alternatif.nama}</strong>
+            dengan skor akhir <strong>{(hasil[0]?.totalSkor * 100).toFixed(2)}%</strong>.
+          </p>
+        </div>
+
+        <div className="mt-8 text-center text-sm text-gray-400 print:mt-16">
+          <p>Dokumen ini dicetak dari SPK Cabai Premium v2.1.0</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== ./app/layout.tsx ===
+import type { Metadata } from "next";
+import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+
+export const metadata: Metadata = {
+  title: "SPK Cabai Premium - Sistem Pemilihan Bibit Cabai Terbaik",
+  description: "Sistem pendukung keputusan pemilihan bibit cabai premium menggunakan metode SAW",
+};
+
+// Komponen header profile sederhana (bisa dipisah ke file sendiri)
+function ProfileHeader() {
+  return (
+    <div className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-30">
+      <div className="max-w-7xl mx-auto px-6 py-3 flex justify-end items-center gap-4">
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            <p className="text-sm font-semibold text-gray-800">Petani Maju</p>
+            <p className="text-xs text-gray-500">Administrator</p>
+          </div>
+          <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center text-white font-bold shadow-md">
+            P
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="id">
+      <body className="min-h-screen flex flex-col bg-gradient-to-br from-green-50 via-emerald-50 to-white">
+        <Sidebar />
+        <div className="flex-1 lg:ml-72">
+          <ProfileHeader />
+          <main className="p-6 sm:p-8">
+            {children}
+          </main>
+        </div>
+      </body>
+    </html>
+  );
+}
+=== ./app/loading.tsx ===
+export default function Loading() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <div className="w-16 h-16 border-4 border-emerald-200 border-t-emerald-600 rounded-full animate-spin"></div>
+    </div>
+  );
+}
+=== ./app/page.tsx ===
+"use client";
+
+import Link from "next/link";
+
+export default function Home() {
+  return (
+    <div className="min-h-screen">
+      <div className="relative overflow-hidden bg-gradient-to-br from-green-50 via-emerald-50 to-white">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-emerald-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-float" style={{ animationDelay: '1s' }}></div>
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 relative z-10">
+          <div className="text-center lg:text-left lg:flex lg:items-center lg:justify-between gap-16">
+            <div className="lg:w-2/3 animate-fadeInUp">
+              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-green-500 text-white text-sm font-medium mb-6 shadow-lg animate-glow">
+                <span className="w-2 h-2 bg-white rounded-full mr-2 animate-pulse"></span>
+                SISTEM PENGAMBILAN KEPUTUSAN
+              </div>
+              <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight">
+                <span className="text-gray-900">Pilih Bibit Cabai</span>
+                <span className="gradient-text block mt-2">Premium Terbaik</span>
+              </h1>
+              <p className="mt-6 text-lg text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                Sistem ini membantu Anda memilih bibit cabai premium terbaik 
+                menggunakan metode <strong className="text-emerald-600">Multi Criteria Decision Making (MCDM)</strong> 
+                untuk hasil yang lebih objektif dan akurat.
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                <Link
+                  href="/perhitungan"
+                  className="group px-8 py-3.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl"
+                >
+                  Mulai Penilaian
+                  <span className="inline-block ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+                <Link
+                  href="/kriteria"
+                  className="px-8 py-3.5 bg-white text-emerald-600 font-semibold rounded-xl border-2 border-emerald-600 hover:bg-emerald-50 transition-all hover:shadow-md"
+                >
+                  Pelajari Lebih Lanjut
+                </Link>
+              </div>
+              <div className="mt-12 flex flex-wrap gap-8 justify-center lg:justify-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <span className="text-emerald-600 text-lg">✓</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">15+</p>
+                    <p className="text-sm text-gray-500">Alternatif Bibit</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <span className="text-emerald-600 text-lg">📊</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">4</p>
+                    <p className="text-sm text-gray-500">Kriteria Penilaian</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <span className="text-emerald-600 text-lg">🏆</span>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-gray-900">98.7%</p>
+                    <p className="text-sm text-gray-500">Akurasi Sistem</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-12 lg:mt-0 lg:w-1/3 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="text-center">
+                  <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg animate-float">
+                    <span className="text-4xl">📐</span>
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Metode SAW</h3>
+                  <p className="text-gray-500 mt-1">Simple Additive Weighting</p>
+                  <div className="mt-4 h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent"></div>
+                  <div className="mt-4">
+                    <div className="text-5xl font-bold gradient-text">98.7%</div>
+                    <p className="text-sm text-gray-500 mt-2">Tingkat Akurasi</p>
+                    <div className="mt-3 w-full bg-gray-200 rounded-full h-2">
+                      <div className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full animate-pulse-slow" style={{ width: '98.7%' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-4">Keunggulan Sistem Kami</h2>
+          <p className="text-gray-600 max-w-2xl mx-auto">Dengan metode SAW yang teruji, Anda mendapatkan rekomendasi terbaik</p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { icon: "🎯", title: "4 Kriteria Penilaian", desc: "Penilaian komprehensif dengan bobot yang terukur" },
+            { icon: "🌶️", title: "15 Alternatif Bibit", desc: "Berbagai varietas unggulan dari petani berpengalaman" },
+            { icon: "📊", title: "Metode SAW", desc: "Perhitungan akurat & objektif dengan MCDM" }
+          ].map((item, i) => (
+            <div key={i} className="group bg-white rounded-2xl p-8 shadow-lg card-hover border border-gray-100">
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-green-100 rounded-2xl flex items-center justify-center mb-5 group-hover:scale-110 transition-transform">
+                <span className="text-3xl">{item.icon}</span>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
+              <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+=== ./app/perhitungan/page.tsx ===
+"use client";
+
+import { hitungSAW, dataKriteria, dataAlternatif } from '@/lib/saw';
+import { useState } from 'react';
+
+export default function PerhitunganPage() {
+  const [showDetail, setShowDetail] = useState(false);
+  const hasil = hitungSAW(dataKriteria, dataAlternatif);
+
+  return (
+    <div className="p-6 sm:p-8 max-w-7xl mx-auto">
+      <div className="mb-8 ml-4 md:ml-0">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-green-500 rounded-xl flex items-center justify-center">
+            <span className="text-white text-xl">📐</span>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900">Perhitungan SAW</h1>
+        </div>
+        <p className="text-gray-600 ml-4 md:ml-14">Proses perhitungan menggunakan metode Simple Additive Weighting</p>
+        <div className="h-1 w-24 bg-gradient-to-r from-emerald-500 to-green-500 rounded-full mt-4 ml-4 md:ml-14"></div>
+      </div>
+
+      <div className="grid gap-6">
+        <button
+          onClick={() => setShowDetail(!showDetail)}
+          className="ml-4 md:ml-14 w-fit px-6 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl hover:from-emerald-700 hover:to-green-700 transition-all shadow-lg hover:shadow-xl flex items-center gap-2"
+        >
+          {showDetail ? '🔽 Sembunyikan Detail' : '▶️ Tampilkan Detail Perhitungan'}
+        </button>
+
+        {showDetail && (
+          <div className="bg-white rounded-2xl shadow-xl p-6 overflow-x-auto">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full"></span>
+              Matriks Normalisasi
+            </h2>
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Alternatif</th>
+                  {dataKriteria.map(k => (
+                    <th key={k.id} className="px-4 py-3 text-center text-xs font-medium text-gray-500">{k.nama.split(' ')[0]}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {dataAlternatif.map(a => {
+                  const normalizedValues = dataKriteria.map(k => {
+                    const allValues = dataAlternatif.map(alt => alt.nilai[k.id]);
+                    const maxVal = Math.max(...allValues);
+                    const minVal = Math.min(...allValues);
+                    if (k.jenis === 'benefit') {
+                      return (a.nilai[k.id] / maxVal).toFixed(3);
+                    } else {
+                      return (minVal / a.nilai[k.id]).toFixed(3);
+                    }
+                  });
+                  return (
+                    <tr key={a.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm font-medium text-gray-900">{a.nama}</td>
+                      {normalizedValues.map((val, idx) => (
+                        <td key={idx} className="px-4 py-3 text-center text-sm text-gray-600 font-mono">{val}</td>
+                      ))}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Hasil perangkingan */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="bg-gradient-to-r from-emerald-600 to-green-600 px-6 py-5">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              🏆 Hasil Perangkingan
+            </h2>
+            <p className="text-emerald-100 text-sm mt-1">Berdasarkan perhitungan metode SAW dari 15 alternatif</p>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {hasil.map((item) => (
+              <div key={item.alternatif.id} className="p-5 hover:bg-gray-50 transition-all duration-300">
+                <div className="flex items-center justify-between flex-wrap gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className={`
+                      w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md
+                      ${item.rangking === 1 ? 'bg-gradient-to-r from-yellow-400 to-yellow-500' : 
+                        item.rangking === 2 ? 'bg-gradient-to-r from-gray-400 to-gray-500' : 
+                        item.rangking === 3 ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 
+                        'bg-gradient-to-r from-emerald-500 to-green-600'}
+                    `}>
+                      {item.rangking}
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900">{item.alternatif.nama}</h3>
+                      <p className="text-sm text-gray-500">Skor: {item.totalSkor.toFixed(4)}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-6">
+                    <div className="text-right">
+                      <p className="text-2xl font-bold gradient-text">{(item.totalSkor * 100).toFixed(2)}%</p>
+                      <div className="w-40 bg-gray-200 rounded-full h-2 mt-1">
+                        <div 
+                          className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full"
+                          style={{ width: `${item.totalSkor * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                    {item.rangking === 1 && (
+                      <span className="px-4 py-2 bg-yellow-100 text-yellow-700 text-sm font-bold rounded-full shadow-md">
+                        🏆 REKOMENDASI TERBAIK
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+=== ./components/Header.tsx ===
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+
+const menuItems = [
+  { name: "Beranda", href: "/", icon: "🏠" },
+  { name: "Kriteria", href: "/kriteria", icon: "📊" },
+  { name: "Alternatif", href: "/alternatif", icon: "🌶️" },
+  { name: "Perhitungan", href: "/perhitungan", icon: "📐" },
+  { name: "Hasil", href: "/hasil", icon: "🏆" },
+  { name: "Laporan", href: "/laporan", icon: "📄" },
+];
+
+export default function Header() {
+  const pathname = usePathname();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setIsMobileOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!isMounted) return null;
+
+  return (
+    <>
+      {/* Top Navbar (selalu terlihat) */}
+      <header className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-md z-50 border-b border-gray-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center shadow-md">
+                <span className="text-white text-sm font-bold">C</span>
+              </div>
+              <span className="font-bold text-gray-800 text-lg">SPK Cabai<span className="text-emerald-600">Premium</span></span>
+            </Link>
+
+            {/* Desktop Menu */}
+            <nav className="hidden lg:flex items-center gap-1">
+              {menuItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "text-gray-600 hover:bg-gray-50 hover:text-emerald-600"
+                    }`}
+                  >
+                    <span className="mr-1">{item.icon}</span>
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </nav>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileOpen(!isMobileOpen)}
+              className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 focus:outline-none"
+              aria-label="Menu"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Mobile Side Drawer (tanpa footer) */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full w-64 bg-white shadow-2xl z-40
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:hidden
+          flex flex-col
+        `}
+      >
+        <div className="p-5 border-b border-gray-100">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-green-600 rounded-lg flex items-center justify-center">
+              <span className="text-white text-sm font-bold">C</span>
+            </div>
+            <div>
+              <h2 className="font-bold text-gray-800">SPK Cabai Premium</h2>
+              <p className="text-xs text-gray-400">v2.1</p>
+            </div>
+          </div>
+        </div>
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileOpen(false)}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                <span className="text-xl">{item.icon}</span>
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
+        {/* Tidak ada footer / copyright */}
+      </aside>
+    </>
+  );
+}
+=== ./components/Sidebar.tsx ===
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+
+const menuItems = [
+  { name: "Beranda", href: "/", icon: "🏠" },
+  { name: "Kriteria", href: "/kriteria", icon: "📊" },
+  { name: "Alternatif", href: "/alternatif", icon: "🌶️" },
+  { name: "Perhitungan", href: "/perhitungan", icon: "📐" },
+  { name: "Hasil Keputusan", href: "/hasil", icon: "🏆" },
+  { name: "Laporan", href: "/laporan", icon: "📄" },
+];
+
+export default function Sidebar() {
+  const pathname = usePathname();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMobileOpen]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) setIsMobileOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  if (!isMounted) return null;
+
+  return (
+    <>
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl shadow-xl hover:shadow-2xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+        aria-label="Toggle menu"
+      >
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
+
+      {/* Overlay */}
+      {isMobileOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden transition-all duration-300"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - TANPA FOOTER */}
+      <aside
+        className={`
+          fixed top-0 left-0 h-full w-72 bg-gradient-to-b from-gray-900 to-gray-950 shadow-2xl z-40
+          transform transition-transform duration-300 ease-in-out
+          ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
+          lg:translate-x-0
+          flex flex-col
+        `}
+      >
+        <div className="px-6 py-8 border-b border-gray-800">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white text-lg font-bold">C</span>
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">SPK Cabai</h1>
+              <p className="text-xs text-gray-400">Premium v2.1</p>
+            </div>
+          </div>
+        </div>
+
+        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto sidebar-scroll">
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setIsMobileOpen(false)}
+                className={`
+                  group relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-sm font-medium
+                  ${isActive
+                    ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-900/30"
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }
+                `}
+              >
+                <span className={`text-xl transition-transform duration-200 ${isActive ? "scale-110" : ""}`}>
+                  {item.icon}
+                </span>
+                <span className="flex-1">{item.name}</span>
+                {isActive && (
+                  <div className="absolute right-3 w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></div>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* HAPUS SEMUA FOOTER: tidak ada hr, card, user profile, copyright */}
+      </aside>
+    </>
+  );
+}
+=== ./lib/saw.ts ===
+import { Kriteria, Alternatif, HasilPerhitungan } from '@/types';
+
+export function hitungSAW(
+  kriteria: Kriteria[],
+  alternatif: Alternatif[]
+): HasilPerhitungan[] {
+  // 1. Normalisasi matriks
+  const normalizedMatrix: Record<string, Record<string, number>> = {};
+  
+  for (const k of kriteria) {
+    const values = alternatif.map(a => a.nilai[k.id]);
+    const maxVal = Math.max(...values);
+    const minVal = Math.min(...values);
+    
+    for (const a of alternatif) {
+      if (!normalizedMatrix[a.id]) normalizedMatrix[a.id] = {};
+      
+      if (k.jenis === 'benefit') {
+        normalizedMatrix[a.id][k.id] = a.nilai[k.id] / maxVal;
+      } else {
+        normalizedMatrix[a.id][k.id] = minVal / a.nilai[k.id];
+      }
+    }
+  }
+  
+  // 2. Hitung skor akhir
+  const hasil: HasilPerhitungan[] = alternatif.map(a => {
+    let totalSkor = 0;
+    for (const k of kriteria) {
+      totalSkor += normalizedMatrix[a.id][k.id] * k.bobot;
+    }
+    return {
+      alternatif: a,
+      totalSkor,
+      rangking: 0
+    };
+  });
+  
+  // 3. Urutkan berdasarkan skor tertinggi
+  hasil.sort((a, b) => b.totalSkor - a.totalSkor);
+  
+  // 4. Berikan rangking
+  hasil.forEach((item, index) => {
+    item.rangking = index + 1;
+  });
+  
+  return hasil;
+}
+
+// 4 KRITERIA
+export const dataKriteria: Kriteria[] = [
+  { id: 'hasil', nama: 'Hasil Panen (kg/ha)', bobot: 0.35, jenis: 'benefit' },
+  { id: 'ketahanan', nama: 'Ketahanan Hama/Penyakit', bobot: 0.30, jenis: 'benefit' },
+  { id: 'harga', nama: 'Harga Bibit (per 1000 biji)', bobot: 0.20, jenis: 'cost' },
+  { id: 'umur', nama: 'Umur Panen (hari)', bobot: 0.15, jenis: 'cost' }
+];
+
+// 15 ALTERNATIF BIBIT CABAI
+export const dataAlternatif: Alternatif[] = [
+  { id: 'a1', nama: 'Cabai Merah Besar TM999', nilai: { hasil: 28, ketahanan: 9, harga: 85000, umur: 90 } },
+  { id: 'a2', nama: 'Cabai Rawit Genie F1', nilai: { hasil: 25, ketahanan: 8, harga: 75000, umur: 85 } },
+  { id: 'a3', nama: 'Cabai Keriting Lado F1', nilai: { hasil: 30, ketahanan: 7, harga: 95000, umur: 95 } },
+  { id: 'a4', nama: 'Cabai Rawit Super F1', nilai: { hasil: 26, ketahanan: 9, harga: 80000, umur: 88 } },
+  { id: 'a5', nama: 'Cabai Merah Gada F1', nilai: { hasil: 27, ketahanan: 8, harga: 78000, umur: 92 } },
+  { id: 'a6', nama: 'Cabai Rawit Bara F1', nilai: { hasil: 29, ketahanan: 8, harga: 82000, umur: 87 } },
+  { id: 'a7', nama: 'Cabai Keriting Seloka', nilai: { hasil: 24, ketahanan: 9, harga: 72000, umur: 93 } },
+  { id: 'a8', nama: 'Cabai Merah Hot Beauty', nilai: { hasil: 31, ketahanan: 7, harga: 98000, umur: 91 } },
+  { id: 'a9', nama: 'Cabai Rawit Pelangi', nilai: { hasil: 23, ketahanan: 8, harga: 68000, umur: 84 } },
+  { id: 'a10', nama: 'Cabai Keriting Kencana', nilai: { hasil: 27, ketahanan: 9, harga: 88000, umur: 89 } },
+  { id: 'a11', nama: 'Cabai Merah Unggul', nilai: { hasil: 29, ketahanan: 8, harga: 79000, umur: 86 } },
+  { id: 'a12', nama: 'Cabai Rawit Mutiara', nilai: { hasil: 26, ketahanan: 9, harga: 77000, umur: 83 } },
+  { id: 'a13', nama: 'Cabai Keriting Maksi', nilai: { hasil: 28, ketahanan: 7, harga: 92000, umur: 94 } },
+  { id: 'a14', nama: 'Cabai Merah Mega', nilai: { hasil: 32, ketahanan: 8, harga: 89000, umur: 87 } },
+  { id: 'a15', nama: 'Cabai Rawit Emas', nilai: { hasil: 27, ketahanan: 9, harga: 73000, umur: 86 } }
+];
+=== ./package.json ===
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
+
+=== ./public/file.svg ===
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+=== ./public/globe.svg ===
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+=== ./public/next.svg ===
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+=== ./public/vercel.svg ===
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+=== ./public/window.svg ===
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+=== ./ringkasan.txt ===
+
+=== ./types/index.ts ===
+export interface Kriteria {
+  id: string;
+  nama: string;
+  bobot: number;
+  jenis: 'benefit' | 'cost';
+}
+
+export interface Alternatif {
+  id: string;
+  nama: string;
+  nilai: Record<string, number>;
+}
+
+export interface HasilPerhitungan {
+  alternatif: Alternatif;
+  totalSkor: number;
+  rangking: number;
+}
