@@ -1,13 +1,13 @@
 "use client";
 
-import { hitungSAW, dataKriteria } from "@/lib/saw";
+import { hitungSAW } from "@/lib/saw";
 import { useApp } from "@/components/AppProvider";
 import PageHeader from "@/components/PageHeader";
 import { LaporanIcon, PrintIcon, DownloadIcon } from "@/components/icons";
 
 export default function LaporanPage() {
-  const { alternatif } = useApp();
-  const hasil = hitungSAW(dataKriteria, alternatif);
+  const { alternatif, kriteria, loading } = useApp();
+  const hasil = hitungSAW(kriteria, alternatif);
 
   const handlePrint = () => window.print();
 
@@ -19,7 +19,7 @@ export default function LaporanPage() {
     hasil.forEach((item) => {
       content += `${item.rangking}. ${item.alternatif.nama} - ${(item.totalSkor * 100).toFixed(2)}%\n`;
     });
-    content += `\nRekomendasi Terbaik: ${hasil[0].alternatif.nama}\n`;
+    content += `\nRekomendasi Terbaik: ${hasil[0]?.alternatif.nama || "-"}\n`;
 
     const blob = new Blob([content], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
@@ -29,6 +29,29 @@ export default function LaporanPage() {
     a.click();
     URL.revokeObjectURL(url);
   };
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-[rgba(46,232,95,0.2)] border-t-[var(--neon)]" />
+      </div>
+    );
+  }
+
+  if (alternatif.length === 0) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Laporan Hasil Keputusan"
+          subtitle="Laporan lengkap hasil pemilihan bibit cabai premium"
+          Icon={LaporanIcon}
+        />
+        <div className="glass p-12 text-center text-[var(--text-dim)]">
+          Belum ada data alternatif. Tambahkan data terlebih dahulu pada menu Alternatif.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -72,7 +95,7 @@ export default function LaporanPage() {
                 </tr>
               </thead>
               <tbody>
-                {dataKriteria.map((k, i) => (
+                {kriteria.map((k, i) => (
                   <tr key={k.id} className="border-b border-[var(--border)] text-[var(--text-muted)] print:text-black">
                     <td className="px-3 py-3">{i + 1}</td>
                     <td className="px-3 py-3">{k.nama}</td>

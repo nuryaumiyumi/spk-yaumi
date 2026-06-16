@@ -8,8 +8,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Alternatif } from "@/types";
-import { dataAlternatif as bawaanAlternatif } from "@/lib/saw";
+import type { Alternatif, Kriteria } from "@/types";
+import { supabase } from "@/lib/supabaseClient";
 
 export interface Notif {
   id: string;
@@ -19,13 +19,24 @@ export interface Notif {
 }
 
 type DataAlternatif = Omit<Alternatif, "id">;
+type AlternatifRow = {
+  id: string;
+  nama: string;
+  hasil: number;
+  ketahanan: number;
+  harga: number;
+  umur: number;
+};
 
 interface AppContextValue {
   alternatif: Alternatif[];
-  tambahAlternatif: (data: DataAlternatif) => void;
-  ubahAlternatif: (id: string, data: DataAlternatif) => void;
-  hapusAlternatif: (id: string) => void;
-  resetAlternatif: () => void;
+  kriteria: Kriteria[];
+  loading: boolean;
+  kriteriaLoading: boolean;
+  tambahAlternatif: (data: DataAlternatif) => Promise<void>;
+  ubahAlternatif: (id: string, data: DataAlternatif) => Promise<void>;
+  hapusAlternatif: (id: string) => Promise<void>;
+  resetAlternatif: () => Promise<void>;
   notifikasi: Notif[];
   belumDibaca: number;
   tandaiDibaca: () => void;
@@ -34,50 +45,92 @@ interface AppContextValue {
 
 const AppContext = createContext<AppContextValue | null>(null);
 
-const LS_ALT = "spk-cabai:alternatif";
 const LS_NOTIF = "spk-cabai:notifikasi";
 
 const buatId = (awalan: string) =>
   `${awalan}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
 
+function rowToAlternatif(row: AlternatifRow): Alternatif {
+  return {
+    id: row.id,
+    nama: row.nama,
+    nilai: {
+      hasil: row.hasil,
+      ketahanan: row.ketahanan,
+      harga: row.harga,
+      umur: row.umur,
+    },
+  };
+}
+
+function alternatifToRow(alt: DataAlternatif): Omit<AlternatifRow, "id"> {
+  return {
+    nama: alt.nama,
+    hasil: alt.nilai.hasil,
+    ketahanan: alt.nilai.ketahanan,
+    harga: alt.nilai.harga,
+    umur: alt.nilai.umur,
+  };
+}
+
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [alternatif, setAlternatif] = useState<Alternatif[]>(bawaanAlternatif);
+  const [alternatif, setAlternatif] = useState<Alternatif[]>([]);
+  const [kriteria, setKriteria] = useState<Kriteria[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [kriteriaLoading, setKriteriaLoading] = useState(true);
   const [notifikasi, setNotifikasi] = useState<Notif[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
-  // Muat dari localStorage setelah mount. Aman untuk SSR: nilai awal di server
-  // dan render pertama klien selalu = data bawaan, baru diganti setelah hydrate.
-  /* eslint-disable react-hooks/set-state-in-effect -- hidrasi satu kali dari localStorage */
+  // Load kriteria dari Supabase
+  const loadKriteria = useCallback(async () => {
+    setKriteriaLoading(true);
+    const { data, error } = await supabase
+      .from("kriteria")
+      .select("*")
+      .order("urutan", { ascending: true });
+    if (error) {
+      console.error("Gagal load kriteria:", error);
+    } else if (data) {
+      setKriteria(data);
+    }
+    setKriteriaLoading(false);
+  }, []);
+
+  const loadAlternatif = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("alternatif")
+      .select("*")
+      .order("created_at", { ascending: true });
+    if (error) {
+      console.error("Gagal load alternatif:", error);
+      setAlternatif([]);
+    } else if (data) {
+      setAlternatif(data.map(rowToAlternatif));
+    }
+    setLoading(false);
+  }, []);
+
+  // Load notifikasi dari localStorage
   useEffect(() => {
     try {
-      const a = localStorage.getItem(LS_ALT);
-      if (a) setAlternatif(JSON.parse(a));
       const n = localStorage.getItem(LS_NOTIF);
       if (n) setNotifikasi(JSON.parse(n));
-    } catch {
-      /* localStorage tidak tersedia — abaikan */
-    }
+    } catch {}
     setHydrated(true);
   }, []);
-  /* eslint-enable react-hooks/set-state-in-effect */
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(LS_ALT, JSON.stringify(alternatif));
-    } catch {
-      /* abaikan */
-    }
-  }, [alternatif, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
     try {
       localStorage.setItem(LS_NOTIF, JSON.stringify(notifikasi));
-    } catch {
-      /* abaikan */
-    }
+    } catch {}
   }, [notifikasi, hydrated]);
+
+  useEffect(() => {
+    loadAlternatif();
+    loadKriteria();
+  }, [loadAlternatif, loadKriteria]);
 
   const pushNotif = useCallback((pesan: string) => {
     setNotifikasi((prev) =>
@@ -89,34 +142,72 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const tambahAlternatif = useCallback(
-    (data: DataAlternatif) => {
-      setAlternatif((prev) => [...prev, { ...data, id: buatId("a") }]);
+    async (data: DataAlternatif) => {
+      const row = alternatifToRow(data);
+      const { data: newRow, error } = await supabase
+        .from("alternatif")
+        .insert(row)
+        .select()
+        .single();
+      if (error) {
+        console.error("Gagal tambah alternatif:", error);
+        pushNotif(`Gagal menambahkan "${data.nama}".`);
+        return;
+      }
+      const newAlt = rowToAlternatif(newRow);
+      setAlternatif((prev) => [...prev, newAlt]);
       pushNotif(`Alternatif "${data.nama}" berhasil ditambahkan.`);
     },
     [pushNotif]
   );
 
   const ubahAlternatif = useCallback(
-    (id: string, data: DataAlternatif) => {
-      setAlternatif((prev) => prev.map((x) => (x.id === id ? { ...data, id } : x)));
+    async (id: string, data: DataAlternatif) => {
+      const row = alternatifToRow(data);
+      const { error } = await supabase
+        .from("alternatif")
+        .update(row)
+        .eq("id", id);
+      if (error) {
+        console.error("Gagal ubah alternatif:", error);
+        pushNotif(`Gagal memperbarui "${data.nama}".`);
+        return;
+      }
+      setAlternatif((prev) =>
+        prev.map((x) => (x.id === id ? { ...data, id } : x))
+      );
       pushNotif(`Alternatif "${data.nama}" berhasil diperbarui.`);
     },
     [pushNotif]
   );
 
   const hapusAlternatif = useCallback(
-    (id: string) => {
+    async (id: string) => {
       const target = alternatif.find((x) => x.id === id);
+      const { error } = await supabase.from("alternatif").delete().eq("id", id);
+      if (error) {
+        console.error("Gagal hapus alternatif:", error);
+        pushNotif(`Gagal menghapus "${target?.nama}".`);
+        return;
+      }
       setAlternatif((prev) => prev.filter((x) => x.id !== id));
       if (target) pushNotif(`Alternatif "${target.nama}" berhasil dihapus.`);
     },
     [alternatif, pushNotif]
   );
 
-  const resetAlternatif = useCallback(() => {
-    setAlternatif(bawaanAlternatif);
-    pushNotif("Data alternatif dikembalikan ke bawaan.");
-  }, [pushNotif]);
+  const resetAlternatif = useCallback(async () => {
+    // Ambil data alternatif dari Supabase (sudah ada seed)
+    // Karena tidak ada fallback, kita hanya hapus semua lalu load ulang? 
+    // Tapi lebih aman: minta user untuk mengisi ulang atau tidak perlu reset.
+    // Untuk sementara, kita hanya reload dari database (tidak menghapus).
+    // Atau bisa juga hapus semua dan insert ulang dari seed? Tapi seed sudah ada.
+    // Kita implementasikan: hapus semua, lalu insert ulang data dari file seed? 
+    // Karena kita tidak punya akses ke file seed di client, lebih baik tidak ada reset.
+    // Ubah: resetAlternatif akan me-reload dari DB (refresh).
+    await loadAlternatif();
+    pushNotif("Data alternatif telah di-refresh dari database.");
+  }, [loadAlternatif, pushNotif]);
 
   const tandaiDibaca = useCallback(() => {
     setNotifikasi((prev) =>
@@ -132,6 +223,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider
       value={{
         alternatif,
+        kriteria,
+        loading,
+        kriteriaLoading,
         tambahAlternatif,
         ubahAlternatif,
         hapusAlternatif,

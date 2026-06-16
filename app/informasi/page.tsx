@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { dataKriteria } from "@/lib/saw";
 import { useApp } from "@/components/AppProvider";
 import PageHeader from "@/components/PageHeader";
 import {
@@ -23,7 +22,15 @@ const features = [
 ];
 
 export default function InformasiPage() {
-  const { alternatif } = useApp();
+  const { alternatif, kriteria, loading, kriteriaLoading } = useApp();
+
+  if (loading || kriteriaLoading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-[rgba(46,232,95,0.2)] border-t-[var(--neon)]" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -45,7 +52,7 @@ export default function InformasiPage() {
               SAW adalah salah satu metode <strong className="text-[var(--neon)]">Multi Criteria Decision Making (MCDM)</strong> yang
               bekerja dengan mencari penjumlahan terbobot dari rating kinerja setiap alternatif pada semua
               kriteria. Sistem ini menilai <strong className="text-white">{alternatif.length} varietas bibit cabai</strong> berdasarkan{" "}
-              <strong className="text-white">{dataKriteria.length} kriteria</strong> untuk menghasilkan rekomendasi terbaik secara objektif.
+              <strong className="text-white">{kriteria.length} kriteria</strong> untuk menghasilkan rekomendasi terbaik secara objektif.
             </p>
           </div>
         </div>
@@ -86,7 +93,7 @@ export default function InformasiPage() {
       <div className="glass p-6 sm:p-8">
         <h2 className="mb-5 text-lg font-bold text-white">Ringkasan Kriteria</h2>
         <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {dataKriteria.map((k) => (
+          {kriteria.map((k) => (
             <li key={k.id} className="glass-soft flex items-center gap-3 p-4">
               <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-[rgba(46,232,95,0.12)] text-[var(--neon)]">
                 <CheckIcon width={16} height={16} />

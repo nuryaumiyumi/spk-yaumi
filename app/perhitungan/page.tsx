@@ -1,15 +1,19 @@
 "use client";
 
-import { hitungSAW, dataKriteria } from "@/lib/saw";
+import { hitungSAW } from "@/lib/saw";
 import { useApp } from "@/components/AppProvider";
 import { useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { PerhitunganIcon, HasilIcon, ChevronDownIcon } from "@/components/icons";
+import Loading from "@/app/loading";
 
 export default function PerhitunganPage() {
-  const { alternatif } = useApp();
+  const { alternatif, kriteria, loading, kriteriaLoading } = useApp();
   const [showDetail, setShowDetail] = useState(false);
-  const hasil = hitungSAW(dataKriteria, alternatif);
+  
+  if (loading || kriteriaLoading) return <Loading />;
+  
+  const hasil = hitungSAW(kriteria, alternatif);
 
   const rankBadge = (r: number) =>
     r === 1 ? "bg-gradient-to-br from-[#facc15] to-[#eab308] text-[#3b2f00]"
@@ -48,14 +52,14 @@ export default function PerhitunganPage() {
               <thead>
                 <tr className="border-b border-[var(--border)] text-xs uppercase tracking-wider text-[var(--text-dim)]">
                   <th className="px-6 py-4 text-left font-semibold">Alternatif</th>
-                  {dataKriteria.map((k) => (
+                  {kriteria.map((k) => (
                     <th key={k.id} className="px-6 py-4 text-center font-semibold">{k.singkat}</th>
                   ))}
-                </tr>
+                 </tr>
               </thead>
               <tbody>
                 {alternatif.map((a) => {
-                  const normalizedValues = dataKriteria.map((k) => {
+                  const normalizedValues = kriteria.map((k) => {
                     const allValues = alternatif.map((alt) => alt.nilai[k.id]);
                     const maxVal = Math.max(...allValues);
                     const minVal = Math.min(...allValues);
@@ -78,7 +82,6 @@ export default function PerhitunganPage() {
         </div>
       )}
 
-      {/* Ranking */}
       <div className="glass overflow-hidden">
         <div className="head-bar flex items-center gap-3 px-6 py-5 sm:px-8">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#34e36a] to-[#16a34a] text-[#042b13]">

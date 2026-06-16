@@ -1,13 +1,61 @@
+// app/hasil/page.tsx
 "use client";
 
-import { hitungSAW, dataKriteria } from "@/lib/saw";
-import { useApp } from "@/components/AppProvider";
+import { useEffect, useState } from "react";
 import PageHeader from "@/components/PageHeader";
 import { HasilIcon } from "@/components/icons";
 
+interface HasilItem {
+  id: string;
+  nama: string;
+  skor_akhir: number;
+  peringkat: number;
+}
+
 export default function HasilPage() {
-  const { alternatif } = useApp();
-  const hasil = hitungSAW(dataKriteria, alternatif);
+  const [hasil, setHasil] = useState<HasilItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    fetch("/api/saw")
+      .then((res) => res.json())
+      .then((data) => {
+        if (isMounted && data.success) {
+          setHasil(data.data);
+        }
+        if (isMounted) setLoading(false);
+      })
+      .catch((err) => {
+        console.error(err);
+        if (isMounted) setLoading(false);
+      });
+    return () => { isMounted = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-[rgba(46,232,95,0.2)] border-t-[var(--neon)]" />
+      </div>
+    );
+  }
+
+  if (!hasil.length) {
+    return (
+      <div className="space-y-8">
+        <PageHeader
+          title="Hasil Keputusan"
+          subtitle="Rekomendasi final pemilihan bibit cabai premium"
+          Icon={HasilIcon}
+        />
+        <div className="glass p-12 text-center text-[var(--text-dim)]">
+          Belum ada data alternatif. Silakan tambahkan data alternatif terlebih dahulu.
+        </div>
+      </div>
+    );
+  }
+
   const terbaik = hasil[0];
   const top3 = hasil.slice(0, 3);
 
@@ -18,7 +66,7 @@ export default function HasilPage() {
     <div className="space-y-8">
       <PageHeader
         title="Hasil Keputusan"
-        subtitle={`Rekomendasi final pemilihan bibit cabai premium terbaik dari ${alternatif.length} alternatif`}
+        subtitle="Rekomendasi final pemilihan bibit cabai premium"
         Icon={HasilIcon}
       />
 
@@ -29,8 +77,8 @@ export default function HasilPage() {
           <div className="order-2 text-center sm:order-1">
             <div className="glass-soft flex h-32 flex-col items-center justify-end rounded-b-none border-b-0 p-4">
               <span className="mb-2 text-4xl">🥈</span>
-              <p className="text-sm font-semibold text-white">{truncateName(top3[1].alternatif.nama)}</p>
-              <p className="text-xs text-[var(--text-muted)]">{(top3[1].totalSkor * 100).toFixed(1)}%</p>
+              <p className="text-sm font-semibold text-white">{truncateName(top3[1].nama)}</p>
+              <p className="text-xs text-[var(--text-muted)]">{(top3[1].skor_akhir * 100).toFixed(1)}%</p>
             </div>
             <div className="rounded-b-xl bg-gradient-to-r from-[#cbd5e1] to-[#94a3b8] py-2">
               <p className="font-bold text-[#1e293b]">#2</p>
@@ -43,8 +91,8 @@ export default function HasilPage() {
           <div className="order-1 text-center sm:order-2">
             <div className="flex h-44 flex-col items-center justify-end rounded-t-2xl border border-b-0 border-[rgba(250,204,21,0.35)] bg-gradient-to-t from-[rgba(250,204,21,0.10)] to-[rgba(250,204,21,0.22)] p-6 shadow-[0_0_40px_-14px_rgba(250,204,21,0.45)]">
               <span className="mb-2 text-6xl">👑</span>
-              <p className="text-base font-bold text-white">{truncateName(terbaik.alternatif.nama, 16)}</p>
-              <p className="text-sm font-bold text-[#facc15]">{(terbaik.totalSkor * 100).toFixed(2)}%</p>
+              <p className="text-base font-bold text-white">{truncateName(terbaik.nama, 16)}</p>
+              <p className="text-sm font-bold text-[#facc15]">{(terbaik.skor_akhir * 100).toFixed(2)}%</p>
             </div>
             <div className="rounded-b-xl bg-gradient-to-r from-[#facc15] to-[#eab308] py-3">
               <p className="text-xl font-extrabold text-[#3b2f00]">#1 TERBAIK</p>
@@ -57,8 +105,8 @@ export default function HasilPage() {
           <div className="order-3 text-center">
             <div className="glass-soft flex h-28 flex-col items-center justify-end rounded-b-none border-b-0 p-4">
               <span className="mb-2 text-4xl">🥉</span>
-              <p className="text-sm font-semibold text-white">{truncateName(top3[2].alternatif.nama)}</p>
-              <p className="text-xs text-[var(--text-muted)]">{(top3[2].totalSkor * 100).toFixed(1)}%</p>
+              <p className="text-sm font-semibold text-white">{truncateName(top3[2].nama)}</p>
+              <p className="text-xs text-[var(--text-muted)]">{(top3[2].skor_akhir * 100).toFixed(1)}%</p>
             </div>
             <div className="rounded-b-xl bg-gradient-to-r from-[#fb923c] to-[#ea580c] py-2">
               <p className="font-bold text-[#3b1700]">#3</p>
@@ -70,27 +118,27 @@ export default function HasilPage() {
       {/* Full ranking */}
       <div className="glass overflow-hidden">
         <div className="head-bar px-6 py-5 sm:px-8">
-          <h3 className="font-semibold text-white">📋 Perangkingan Lengkap ({alternatif.length} Alternatif)</h3>
+          <h3 className="font-semibold text-white">📋 Perangkingan Lengkap ({hasil.length} Alternatif)</h3>
         </div>
         <div>
           {hasil.map((item) => (
-            <div key={item.alternatif.id} className="table-row-hover flex items-center gap-4 border-t border-[var(--border)] px-6 py-[18px] sm:px-8">
+            <div key={item.id} className="table-row-hover flex items-center gap-4 border-t border-[var(--border)] px-6 py-[18px] sm:px-8">
               <div className="flex min-w-0 flex-1 items-center gap-3">
                 <div className={`grid h-8 w-8 shrink-0 place-items-center rounded-full text-sm font-bold ${
-                  item.rangking === 1 ? "bg-[#facc15] text-[#3b2f00]"
-                  : item.rangking === 2 ? "bg-[#cbd5e1] text-[#1e293b]"
-                  : item.rangking === 3 ? "bg-[#fb923c] text-[#3b1700]"
+                  item.peringkat === 1 ? "bg-[#facc15] text-[#3b2f00]"
+                  : item.peringkat === 2 ? "bg-[#cbd5e1] text-[#1e293b]"
+                  : item.peringkat === 3 ? "bg-[#fb923c] text-[#3b1700]"
                   : "bg-white/10 text-[var(--text-muted)]"
                 }`}>
-                  {item.rangking}
+                  {item.peringkat}
                 </div>
-                <span className="truncate font-medium text-white">{item.alternatif.nama}</span>
+                <span className="truncate font-medium text-white">{item.nama}</span>
               </div>
               <div className="flex shrink-0 items-center gap-4">
                 <div className="h-2 w-28 overflow-hidden rounded-full bg-white/10 sm:w-40">
-                  <div className="h-full rounded-full bg-gradient-to-r from-[#34e36a] to-[#16a34a]" style={{ width: `${item.totalSkor * 100}%` }} />
+                  <div className="h-full rounded-full bg-gradient-to-r from-[#34e36a] to-[#16a34a]" style={{ width: `${item.skor_akhir * 100}%` }} />
                 </div>
-                <span className="w-16 text-right font-bold text-[var(--neon)]">{(item.totalSkor * 100).toFixed(2)}%</span>
+                <span className="w-16 text-right font-bold text-[var(--neon)]">{(item.skor_akhir * 100).toFixed(2)}%</span>
               </div>
             </div>
           ))}

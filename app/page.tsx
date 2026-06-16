@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { dataKriteria } from "@/lib/saw";
+import { useEffect, useState } from "react";
 import { useApp } from "@/components/AppProvider";
 import {
   RocketIcon,
@@ -13,13 +13,34 @@ import {
   ScaleIcon,
   TargetIcon,
 } from "@/components/icons";
+import type { Kriteria } from "@/types";
 
 export default function Home() {
   const { alternatif } = useApp();
+  const [kriteria, setKriteria] = useState<Kriteria[]>([]);
+  const [loadingKriteria, setLoadingKriteria] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/kriteria")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) setKriteria(data.data);
+        setLoadingKriteria(false);
+      })
+      .catch(() => setLoadingKriteria(false));
+  }, []);
+
+  if (loadingKriteria) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-[rgba(46,232,95,0.2)] border-t-[var(--neon)]" />
+      </div>
+    );
+  }
 
   const stats = [
     {
-      value: String(dataKriteria.length),
+      value: String(kriteria.length),
       title: "Kriteria Penilaian",
       sub: "Evaluasi komprehensif",
       Icon: LeafIcon,
@@ -39,16 +60,16 @@ export default function Home() {
     {
       value: "SAW",
       title: "Metode",
-      sub: "Perhitungan akurat",
+      sub: "Simple Additive Weighting",
       Icon: ScaleIcon,
       glow: "glow-amber",
       iconBg: "bg-[rgba(245,180,40,0.12)]",
       iconColor: "text-[#f5b428]",
     },
     {
-      value: "98.7%",
-      title: "Akurasi Keputusan",
-      sub: "Tingkat kepercayaan tinggi",
+      value: "Akurat",
+      title: "Keputusan Tepat",
+      sub: "Berdasarkan data riil",
       Icon: TargetIcon,
       glow: "glow-purple",
       iconBg: "bg-[rgba(168,90,255,0.12)]",
@@ -58,8 +79,8 @@ export default function Home() {
 
   return (
     <div className="space-y-8 border rounded-lg h-full border-emerald-200/20 p-4 ">
-      {/* HERO */}
-      <section className=" relative overflow-hidden">
+      {/* HERO - same as before */}
+      <section className="relative overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url('/cabai-content.jpeg')" }}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type ReactNode } from "react";
 import { useApp } from "@/components/AppProvider";
-import { dataKriteria, detailSAW } from "@/lib/saw";
+import { detailSAW } from "@/lib/saw";
 import { formatAngka } from "@/lib/format";
 import PageHeader from "@/components/PageHeader";
 import GroupedBarChart from "@/components/GroupedBarChart";
@@ -28,7 +28,6 @@ const rankClass = (r: number) =>
         ? "bg-[#fb923c] text-[#3b1700]"
         : "bg-white/10 text-[var(--text-muted)]";
 
-/* Pecahan a/b yang ditata vertikal (numerator di atas garis). */
 function Frac({ atas, bawah }: { atas: ReactNode; bawah: ReactNode }) {
   return (
     <span className="mx-1 inline-flex flex-col items-center text-center align-middle leading-tight">
@@ -79,11 +78,10 @@ function Langkah({
   );
 }
 
-/* Kolom kriteria untuk header tabel matriks. */
-function HeaderKriteria({ sub }: { sub?: (k: Kriteria) => ReactNode }) {
+function HeaderKriteria({ kriteria, sub }: { kriteria: Kriteria[]; sub?: (k: Kriteria) => ReactNode }) {
   return (
     <>
-      {dataKriteria.map((k) => (
+      {kriteria.map((k) => (
         <th key={k.id} className="px-5 py-3 text-right font-semibold">
           <span className="block normal-case" style={{ color: warnaKriteria[k.id] }}>
             {k.singkat}
@@ -100,8 +98,8 @@ function HeaderKriteria({ sub }: { sub?: (k: Kriteria) => ReactNode }) {
 }
 
 export default function DetailPerhitunganPage() {
-  const { alternatif } = useApp();
-  const { ekstrem, hasil } = useMemo(() => detailSAW(dataKriteria, alternatif), [alternatif]);
+  const { alternatif, kriteria, loading } = useApp();
+  const { ekstrem, hasil } = useMemo(() => detailSAW(kriteria, alternatif), [kriteria, alternatif]);
 
   const [mode, setMode] = useState<Mode>("detail");
   const [pilihId, setPilihId] = useState("");
@@ -116,7 +114,15 @@ export default function DetailPerhitunganPage() {
     hasil.find((h) => h.alternatif.id === pilihId) ??
     hasil.find((h) => h.alternatif.id === terbaikId);
 
-  if (!terpilih) {
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-[rgba(46,232,95,0.2)] border-t-[var(--neon)]" />
+      </div>
+    );
+  }
+
+  if (!terpilih || alternatif.length === 0) {
     return (
       <div className="space-y-8">
         <PageHeader
@@ -545,7 +551,7 @@ export default function DetailPerhitunganPage() {
               Vektor bobot yang dipakai untuk seluruh perhitungan (total = 1,00).
             </p>
             <div className="mt-4 flex flex-wrap gap-2.5">
-              {dataKriteria.map((k) => (
+              {kriteria.map((k) => (
                 <span key={k.id} className="glass-soft inline-flex items-center gap-2 px-3.5 py-2 text-xs">
                   <span className="h-2 w-2 rounded-full" style={{ background: warnaKriteria[k.id] }} />
                   <span className="font-semibold text-white">{k.singkat}</span>
@@ -568,7 +574,7 @@ export default function DetailPerhitunganPage() {
                 <thead>
                   <tr className="text-xs uppercase tracking-wider text-[var(--text-dim)]">
                     <th className="px-5 py-3 text-left font-semibold">Alternatif</th>
-                    <HeaderKriteria sub={(k) => k.satuan} />
+                    <HeaderKriteria kriteria={kriteria} sub={(k) => k.satuan} />
                   </tr>
                 </thead>
                 <tbody>
@@ -601,6 +607,7 @@ export default function DetailPerhitunganPage() {
                   <tr className="text-xs uppercase tracking-wider text-[var(--text-dim)]">
                     <th className="px-5 py-3 text-left font-semibold">Alternatif</th>
                     <HeaderKriteria
+                      kriteria={kriteria}
                       sub={(k) =>
                         k.jenis === "benefit"
                           ? `max ${formatAngka(ekstrem[k.id].max)}`
@@ -639,7 +646,7 @@ export default function DetailPerhitunganPage() {
                 <thead>
                   <tr className="text-xs uppercase tracking-wider text-[var(--text-dim)]">
                     <th className="px-5 py-3 text-left font-semibold">Alternatif</th>
-                    <HeaderKriteria sub={(k) => `w ${k.bobot.toFixed(2)}`} />
+                    <HeaderKriteria kriteria={kriteria} sub={(k) => `w ${k.bobot.toFixed(2)}`} />
                     <th className="px-5 py-3 text-right font-semibold">
                       Skor (<i>V</i>
                       <sub>i</sub>)
